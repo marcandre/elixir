@@ -566,7 +566,7 @@ signature_to_binary(_, Name, Signature) ->
   Doc = 'Elixir.Inspect.Algebra':format('Elixir.Code':quoted_to_algebra(Quoted), infinity),
   'Elixir.IO':iodata_to_binary(Doc).
 
-checker_chunk(#{definitions := Definitions, deprecated := Deprecated, is_behaviour := IsBehaviour}) ->
+checker_chunk(#{definitions := Definitions, deprecated := Deprecated, defines_behaviour := DefinesBehaviour}) ->
   DeprecatedMap = maps:from_list(Deprecated),
 
   Exports =
@@ -581,7 +581,7 @@ checker_chunk(#{definitions := Definitions, deprecated := Deprecated, is_behavio
     end, [], Definitions),
 
   Contents = #{
-    exports => lists:sort(behaviour_info_exports(IsBehaviour) ++ Exports)
+    exports => lists:sort(behaviour_info_exports(DefinesBehaviour) ++ Exports)
   },
 
   [{<<"ExCk">>, erlang:term_to_binary({elixir_checker_v1, Contents})}].
