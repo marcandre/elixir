@@ -143,7 +143,8 @@ compile(Line, Module, Block, Vars, E) ->
           unreachable => Unreachable,
           compile_opts => CompileOpts,
           deprecated => get_deprecated(DataBag),
-          defines_behaviour => defines_behaviour(DataBag)
+          defines_behaviour => defines_behaviour(DataBag),
+          implements_behavious => implements_behavious(DataBag)
         },
 
         Binary = elixir_erl:compile(ModuleMap),
@@ -227,6 +228,11 @@ validate_dialyzer_attribute(false, _Defs, _File, _Line) ->
 
 defines_behaviour(DataBag) ->
   ets:member(DataBag, {accumulate, callback}) orelse ets:member(DataBag, {accumulate, macrocallback}).
+
+implements_behaviours(DataBag) ->
+  { ets:member(DataBag, {accumulate, behaviour}) orelse [],
+    ets:member(DataBag, {accumulate, impls})
+  }.
 
 %% An undef error for a function in the module being compiled might result in an
 %% exception message suggesting the current module is not loaded. This is
