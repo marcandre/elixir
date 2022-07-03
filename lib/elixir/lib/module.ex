@@ -1797,20 +1797,7 @@ defmodule Module do
   @doc false
   def check_derive_behaviours_and_impls(env, set, bag, all_definitions) do
     check_derive(env, set, bag)
-    behaviours = bag_lookup_element(bag, {:accumulate, :behaviour}, 2)
-    impls = bag_lookup_element(bag, :impls, 2)
-    callbacks = check_behaviours(env, behaviours)
 
-    pending_callbacks =
-      if impls != [] do
-        {non_implemented_callbacks, contexts} = check_impls(env, behaviours, callbacks, impls)
-        warn_missing_impls(env, non_implemented_callbacks, contexts, all_definitions)
-        non_implemented_callbacks
-      else
-        callbacks
-      end
-
-    check_callbacks(env, pending_callbacks, all_definitions)
     :ok
   end
 
@@ -1831,55 +1818,6 @@ defmodule Module do
 
         IO.warn(message, env)
     end
-  end
-
-  defp check_behaviours(env, behaviours) do
-    Enum.reduce(behaviours, %{}, fn behaviour, acc ->
-      cond do
-        not Code.ensure_loaded?(behaviour) ->
-          message =
-            "@behaviour #{inspect(behaviour)} does not exist (in module #{inspect(env.module)})"
-
-          IO.warn(message, env)
-          acc
-
-        not function_exported?(behaviour, :behaviour_info, 1) ->
-          message =
-            "module #{inspect(behaviour)} is not a behaviour (in module #{inspect(env.module)})"
-
-          IO.warn(message, env)
-          acc
-
-        true ->
-          :elixir_env.trace({:require, [], behaviour, []}, env)
-          optional_callbacks = behaviour_info(behaviour, :optional_callbacks)
-          callbacks = behaviour_info(behaviour, :callbacks)
-          Enum.reduce(callbacks, acc, &add_callback(&1, behaviour, env, optional_callbacks, &2))
-      end
-    end)
-  end
-
-  defp add_callback(original, behaviour, env, optional_callbacks, acc) do
-    {callback, kind} = normalize_macro_or_function_callback(original)
-
-    case acc do
-      %{^callback => {_kind, conflict, _optional?}} ->
-        message =
-          if conflict == behaviour do
-            "the behavior #{inspect(conflict)} has been declared twice " <>
-              "(conflict in #{format_definition(kind, callback)} in module #{inspect(env.module)})"
-          else
-            "conflicting behaviours found. #{format_definition(kind, callback)} is required by " <>
-              "#{inspect(conflict)} and #{inspect(behaviour)} (in module #{inspect(env.module)})"
-          end
-
-        IO.warn(message, env)
-
-      %{} ->
-        :ok
-    end
-
-    Map.put(acc, callback, {kind, behaviour, original in optional_callbacks})
   end
 
   defp check_callbacks(env, callbacks, all_definitions) do
