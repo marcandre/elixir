@@ -1806,7 +1806,12 @@ defmodule Module do
     check_derive(env, set, bag)
     behaviours = bag_lookup_element(bag, {:accumulate, :behaviour}, 2)
     impls = bag_lookup_element(bag, :impls, 2)
-    Module.Behaviour.check_behaviours_and_impls(env, behaviours, impls, all_definitions)
+
+    warnings =
+      Module.Behaviour.check_behaviours_and_impls(env, behaviours, impls, all_definitions)
+
+    true = :ets.insert_new(bag, behaviour_warnings: warnings)
+
     :ok
   end
 

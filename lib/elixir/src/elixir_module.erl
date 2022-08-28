@@ -132,6 +132,10 @@ compile(Line, Module, Block, Vars, E) ->
         RawCompileOpts = bag_lookup_element(DataBag, {accumulate, compile}, 2),
         CompileOpts = validate_compile_opts(RawCompileOpts, AllDefinitions, Unreachable, File, Line),
         AfterVerify = bag_lookup_element(DataBag, {accumulate, after_verify}, 2),
+        [BehaviourWarnings] = case elixir_config:is_bootstrap() of
+          true -> [[]];
+          false -> bag_lookup_element(DataBag, behaviour_warnings, 2)
+        end,
 
         ModuleMap = #{
           struct => get_struct(DataSet),
@@ -145,6 +149,7 @@ compile(Line, Module, Block, Vars, E) ->
           after_verify => AfterVerify,
           compile_opts => CompileOpts,
           deprecated => get_deprecated(DataBag),
+          behaviour_warnings => BehaviourWarnings,
           defines_behaviour => defines_behaviour(DataBag)
         },
 

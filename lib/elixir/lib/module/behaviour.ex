@@ -25,14 +25,7 @@ defmodule Module.Behaviour do
 
     context = check_callbacks(context, all_definitions)
 
-    for warning <- context.warnings do
-      {__MODULE__, message, {file, line, _module}} = warning
-
-      message
-      |> format_warning()
-      |> Enum.join()
-      |> IO.warn(%{context.env | file: file, line: line})
-    end
+    context.warnings
   end
 
   defp context(env) do

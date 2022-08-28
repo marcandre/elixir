@@ -213,8 +213,13 @@ defmodule Module.ParallelChecker do
   ## Module checking
 
   defp check_module(module_map, cache) do
-    %{module: module, file: file, compile_opts: compile_opts, definitions: definitions} =
-      module_map
+    %{
+      module: module,
+      file: file,
+      compile_opts: compile_opts,
+      definitions: definitions,
+      behaviour_warnings: behaviour_warnings
+    } = module_map
 
     no_warn_undefined =
       compile_opts
@@ -224,6 +229,7 @@ defmodule Module.ParallelChecker do
     warnings =
       module
       |> Module.Types.warnings(file, definitions, no_warn_undefined, cache)
+      |> Kernel.++(behaviour_warnings)
       |> group_warnings()
       |> emit_warnings()
 
