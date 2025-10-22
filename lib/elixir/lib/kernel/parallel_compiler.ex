@@ -400,7 +400,7 @@ defmodule Kernel.ParallelCompiler do
 
   defp verify_modules(result, compile_warnings, dependent_modules, state) do
     modules = write_module_binaries(result, state.output, state.beam_timestamp)
-    _ = state.after_compile.()
+    profile(state, "after compile callback", state.after_compile)
 
     runtime_warnings =
       if state.verification? do
